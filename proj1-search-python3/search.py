@@ -18,6 +18,7 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+import math
 
 class SearchProblem:
     """
@@ -86,9 +87,7 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+   
     visited = set()
     fringe = util.Stack()
     actions = []
@@ -96,58 +95,81 @@ def depthFirstSearch(problem):
     x = 10
     c = 0
     while not fringe.isEmpty():
-    	n = fringe.pop()
-    	if problem.isGoalState(n.position):
-    		curr = n
-    		while curr.action != None:
-    			actions.append(curr.action)
-    			print(curr.parent.action)
-    			curr = curr.parent
-    		print("actions: ", actions[::-1])
-    		return actions[::-1]
-    	if n.position not in visited:
-    		visited.add(n.position)
-    		for successor in problem.getSuccessors(n.position):
-    		   	fringe.push(NodeClass(successor[0], successor[1], n)) 
+        n = fringe.pop()
+        if problem.isGoalState(n.position):
+            curr = n
+            while curr.action != None:
+                actions.append(curr.action)
+                print(curr.parent.action)
+                curr = curr.parent
+            print("actions: ", actions[::-1])
+            return actions[::-1]
+        if n.position not in visited:
+            visited.add(n.position)
+            for successor in problem.getSuccessors(n.position):
+                fringe.push(NodeClass(successor[0], successor[1], n)) 
 
 
 class NodeClass:
- 
     def __init__(self, position, action, parent):
         self.position = position
         self.action = action
         self.parent = parent
 
+class WNode:
+    def __init__(self, position, action, parent, cost, distToStart):
+        self.position = position
+        self.action = action
+        self.parent = parent
+        self.cost = cost
+        self.distToStart = distToStart
+
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+
     visited = set()
-    fringe = util.Stack()
+    fringe = util.Queue()
     actions = []
     fringe.push(NodeClass(problem.getStartState(), None, None))
     x = 10
     c = 0
     while not fringe.isEmpty():
-    	n = fringe.pop()
-    	if problem.isGoalState(n.position):
-    		curr = n
-    		while curr.action != None:
-    			actions.append(curr.action)
-    			print(curr.parent.action)
-    			curr = curr.parent
-    		print("actions: ", actions[::-1])
-    		return actions[::-1]
-    	if n.position not in visited:
-    		visited.add(n.position)
-    		for successor in problem.getSuccessors(n.position):
-    		   	fringe.push(NodeClass(successor[0], successor[1], n)) 
+        n = fringe.pop()
+        if problem.isGoalState(n.position):
+            curr = n
+            while curr.action != None:
+                actions.append(curr.action)
+                print(curr.parent.action)
+                curr = curr.parent
+            print("actions: ", actions[::-1])
+            return actions[::-1]
+        if n.position not in visited:
+            visited.add(n.position)
+            for successor in problem.getSuccessors(n.position):
+                fringe.push(NodeClass(successor[0], successor[1], n)) 
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    visited = set()
+    fringe = util.PriorityQueue()
+    actions = []
+    fringe.push(WNode(problem.getStartState(), None, None, None, 0), 0)
+    x = 10
+    c = 0
+    while not fringe.isEmpty():
+        n = fringe.pop()
+        if problem.isGoalState(n.position):
+            curr = n
+            while curr.action != None:
+                actions.append(curr.action)
+                print(curr.parent.action)
+                curr = curr.parent
+            print("actions: ", actions[::-1])
+            return actions[::-1]
+        if n.position not in visited:
+            visited.add(n.position)
+            for successor in problem.getSuccessors(n.position):
+                fringe.push(WNode(successor[0], successor[1], n, successor[2], n.distToStart + successor[2]), n.distToStart + successor[2])
 
 def nullHeuristic(state, problem=None):
     """
@@ -158,12 +180,38 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    visited = set()
+    actions = []
+    start_Posish = problem.getStartState()
+    print("Start:", problem.getStartState())
+    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+    def heuristic2(item):
+        return item.cost + item.distToStart
+    fringe = util.PriorityQueueWithFunction(heuristic2)
+    print(start_Posish)
 
+    fringe.push(WNode(start_Posish, None, None, 0, 0))
+    x = 10
+    c = 0
+    while not fringe.isEmpty():
+        n = fringe.pop()
+        if problem.isGoalState(n.position):
+            curr = n
+            while curr.action != None:
+                actions.append(curr.action)
+                print(curr.parent.action)
+                curr = curr.parent
+            return actions[::-1]
+        if n.position not in visited:
+            visited.add(n.position)
+            for successor in problem.getSuccessors(n.position):
+                fringe.push(WNode(successor[0], successor[1], n, successor[2], n.distToStart + successor[2]))
+def euclidian(tup1, tup2):
+    return tup1 - tup2
 
-# Abbreviations
-bfs = breadthFirstSearch
-dfs = depthFirstSearch
-astar = aStarSearch
-ucs = uniformCostSearch
+# # Abbreviations
+# bfs = breadthFirstSearch
+# dfs = depthFirstSearch
+# astar = aStarSearch
+# ucs = uniformCostSearch
